@@ -20,6 +20,9 @@ Run the same command again to update.
 
 ## Usage
 
+Press **`Cmd+Shift+E`** in a Rex terminal to open the sidecar. It is also in
+the command palette as **Sidecar: File Explorer**.
+
 - Click a folder to open it.
 - Click a file to preview it.
 - Click the `‹ path` header to go up a level.
@@ -28,7 +31,8 @@ Run the same command again to update.
 
 ## Configure
 
-Add options to the `setup` call in `~/.config/rex/init.lua`:
+Add options to the `setup` call in `~/.config/rex/init.lua`. For example, `key`
+changes the shortcut:
 
 ```lua
 require("rex-sidecar").setup{ key = "cmd+shift+e", sidebar_ratio = 0.2, viewer_ratio = 70 }
