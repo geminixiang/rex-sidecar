@@ -1,38 +1,63 @@
 #!/bin/sh
 set -eu
 
-repo=$(cd "$(dirname "$0")" && pwd)
-config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/rex
-config=${REX_CONFIG:-$config_dir/init.lua}
-link=$(dirname "$config")/rex-sidecar
+REPO_URL=${REX_SIDECAR_REPO:-https://github.com/geminixiang/rex-sidecar.git}
+config=${REX_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/rex/init.lua}
+config_dir=$(dirname "$config")
+target=$config_dir/rex-sidecar
 line='require("rex-sidecar").setup{}'
 
+say() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
+die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+
+command -v rex >/dev/null 2>&1 || die "rex not found. Install Rex first: https://www.superlogical.com/rex"
+command -v git >/dev/null 2>&1 || die "git not found"
+
 missing=""
-for cmd in rex yazi ya nvim jq; do
-  command -v "$cmd" >/dev/null 2>&1 || missing="$missing $cmd"
+for pair in yazi:yazi ya:yazi nvim:neovim jq:jq; do
+  cmd=${pair%%:*}
+  pkg=${pair#*:}
+  command -v "$cmd" >/dev/null 2>&1 || case " $missing " in *" $pkg "*) ;; *) missing="$missing $pkg" ;; esac
 done
 if [ -n "$missing" ]; then
-  echo "missing:$missing" >&2
-  echo "install with: brew install yazi neovim jq" >&2
-  exit 1
+  command -v brew >/dev/null 2>&1 || die "missing:$missing. Install them and run this again."
+  say "Installing$missing with Homebrew"
+  brew install $missing
 fi
 
-mkdir -p "$(dirname "$config")"
-if [ "$repo" != "$link" ]; then
-  if [ -e "$link" ] && [ ! -L "$link" ]; then
-    echo "$link exists and is not a symlink; move it away first" >&2
-    exit 1
+self_dir=""
+case "$0" in */install.sh) self_dir=$(cd "$(dirname "$0")" && pwd) ;; esac
+
+mkdir -p "$config_dir"
+if [ -n "$self_dir" ] && [ -f "$self_dir/init.lua" ] && [ -d "$self_dir/yazi" ]; then
+  if [ "$self_dir" != "$target" ]; then
+    if [ -e "$target" ] && [ ! -L "$target" ]; then die "$target exists and is not a symlink; move it away first"; fi
+    say "Linking $target -> $self_dir"
+    ln -sfn "$self_dir" "$target"
   fi
-  ln -sfn "$repo" "$link"
+elif [ -d "$target/.git" ]; then
+  say "Updating $target"
+  git -C "$target" pull --ff-only --quiet
+elif [ -e "$target" ]; then
+  die "$target exists; remove it and run this again"
+else
+  say "Cloning into $target"
+  git clone --quiet --depth 1 "$REPO_URL" "$target"
 fi
 
-if [ ! -d "$repo/yazi/plugins/git.yazi" ]; then
-  YAZI_CONFIG_HOME="$repo/yazi" ya pkg install >/dev/null
-fi
+say "Installing yazi plugins"
+YAZI_CONFIG_HOME="$target/yazi" ya pkg install >/dev/null
 
 touch "$config"
-grep -qF 'require("rex-sidecar")' "$config" || printf '\n%s\n' "$line" >> "$config"
+if grep -qF 'require("rex-sidecar")' "$config"; then
+  say "$config already loads rex-sidecar"
+else
+  say "Adding rex-sidecar to $config"
+  printf '\n%s\n' "$line" >> "$config"
+fi
 
-rex config reload >/dev/null
-rex config check
-echo "rex-sidecar installed. Press Cmd+Shift+E in a Rex terminal."
+if [ -z "${REX_SIDECAR_NO_RELOAD:-}" ]; then
+  rex config reload >/dev/null && say "Reloaded Rex config"
+fi
+
+say "Done. Press Cmd+Shift+E in a Rex terminal."
