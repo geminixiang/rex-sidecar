@@ -5,6 +5,8 @@ A mouse-friendly file explorer and viewer for [Rex](https://www.superlogical.com
 Press `Cmd+Shift+E`. A sidebar opens in the current directory. Click a file to
 preview it next to the sidebar.
 
+![rex-sidecar in Rex](docs/screenshot.png)
+
 ## Install
 
 Install Rex first by following the [Rex installation guide](https://www.superlogical.com/rex/docs/installation). Then run:
