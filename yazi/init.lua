@@ -31,12 +31,12 @@ function Entity:click(event, up)
 end
 
 function Header:cwd()
-	local max = self._area.w - self._right_width
+	local max = self._area.w - self._right_width - 2
 	if max <= 0 then
 		return ""
 	end
-	local s = "‹ " .. ya.readable_path(tostring(self._current.cwd))
-	return ui.Span(ui.truncate(s, { max = max, rtl = true })):style(th.mgr.cwd)
+	local s = ya.readable_path(tostring(self._current.cwd))
+	return ui.Span("‹ " .. ui.truncate(s, { max = max, rtl = true })):style(th.mgr.cwd)
 end
 
 function Header:click(event, up)
