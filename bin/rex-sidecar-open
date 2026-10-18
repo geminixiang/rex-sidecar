@@ -1,0 +1,41 @@
+#!/bin/sh
+set -eu
+
+mode=view
+if [ "${1:-}" = "--preview" ]; then
+  mode=preview
+  shift
+fi
+
+file=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
+[ -f "$file" ] || exit 0
+if [ "$mode" = preview ]; then
+  case $(file -b --mime-encoding "$file") in binary) exit 0 ;; esac
+fi
+
+anchor=${REX_BLOCK:?run inside a Rex terminal}
+main=${REX_SIDECAR_MAIN_BLOCK:-$anchor}
+rex block inspect "$main" >/dev/null 2>&1 || main=$anchor
+ratio=${REX_SIDECAR_VIEWER_RATIO:-70}
+
+key=$(printf '%s' "$anchor" | tr -cd 'A-Za-z0-9' | tail -c 16)
+state="/tmp/rex-sidecar-$(id -u)-$key"
+sock="$state.sock"
+
+until mkdir "$state.lock" 2>/dev/null; do sleep 0.05; done
+trap 'rmdir "$state.lock"' EXIT
+
+viewer=$(cat "$state.id" 2>/dev/null || true)
+if [ -n "$viewer" ] && [ -S "$sock" ] && rex block inspect "$viewer" >/dev/null 2>&1; then
+  escaped=$(printf '%s' "$file" | sed 's/[ \\|%#]/\\&/g')
+  nvim --server "$sock" --remote-send "<C-\\><C-N>:silent! view $escaped<CR>:echo<CR>"
+else
+  rm -f "$sock"
+  viewer=$(rex split -b "$main" --split left --ratio "$ratio" --focus=false --label viewer --json -c "$(dirname "$file")" -- \
+    nvim --clean -R -n --listen "$sock" -c 'set number cursorline nowrap laststatus=2 shortmess+=AF' "$file" | jq -r '.block_ids[0]')
+  printf '%s' "$viewer" > "$state.id"
+fi
+
+if [ "$mode" = view ]; then
+  rex focus "$viewer" >/dev/null
+fi

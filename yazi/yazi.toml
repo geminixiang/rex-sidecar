@@ -1,0 +1,29 @@
+[mgr]
+ratio = [0, 1, 0]
+show_hidden = false
+sort_by = "natural"
+sort_dir_first = true
+linemode = "none"
+
+[opener]
+sidecar = [{ run = '"$REX_SIDECAR_BIN" %s1', orphan = true, desc = "Open in Rex viewer" }]
+enter = [{ run = 'ya emit enter', orphan = true, desc = "Enter directory" }]
+system = [{ run = 'open %s', orphan = true, desc = "Open with system app" }]
+
+[open]
+prepend_rules = [
+  { mime = "folder/*", use = "enter" },
+  { mime = "{image,audio,video}/*", use = ["system", "sidecar"] },
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,pdf}", use = ["system", "sidecar"] },
+  { url = "*", use = "sidecar" },
+]
+
+[[plugin.prepend_fetchers]]
+url   = "*"
+run   = "git"
+group = "git"
+
+[[plugin.prepend_fetchers]]
+url   = "*/"
+run   = "git"
+group = "git"
