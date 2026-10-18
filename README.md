@@ -1,11 +1,13 @@
 # rex-sidecar
 
-A mouse-friendly file explorer and viewer for the [Rex](https://www.superlogical.com/rex) terminal.
+A mouse-friendly file explorer and viewer for [Rex](https://www.superlogical.com/rex), the terminal multiplexer by [Superlogical](https://www.superlogical.com).
 
 Press `Cmd+Shift+E`. A sidebar opens in the current directory. Click a file to
 preview it next to the sidebar.
 
 ## Install
+
+Install Rex first by following the [Rex installation guide](https://www.superlogical.com/rex/docs/installation). Then run:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/geminixiang/rex-sidecar/main/install.sh | sh
@@ -35,6 +37,14 @@ require("rex-sidecar").setup{ key = "cmd+shift+e", sidebar_ratio = 0.2, viewer_r
 ```sh
 sh ~/.config/rex/rex-sidecar/uninstall.sh
 ```
+
+## Acknowledgements
+
+Thanks to [Superlogical](https://www.superlogical.com) for building
+[Rex](https://www.superlogical.com/rex), a great terminal multiplexer. Its Lua
+config and open API made this project possible.
+
+rex-sidecar is a community project. Superlogical does not maintain or endorse it.
 
 ## License
 
