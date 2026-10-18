@@ -46,7 +46,7 @@ else
 fi
 
 say "Installing yazi plugins"
-YAZI_CONFIG_HOME="$target/yazi" ya pkg install >/dev/null
+YAZI_CONFIG_HOME="$target/yazi" ya pkg install >/dev/null 2>&1
 
 touch "$config"
 if grep -qF 'require("rex-sidecar")' "$config"; then

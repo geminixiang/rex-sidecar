@@ -41,30 +41,52 @@ the sidebar, while focus stays in the sidebar so you can keep browsing.
 The keyboard works too. In the sidebar, `j`/`k` move and preview, `l`/`h` go into
 and out of folders, and `Enter` focuses the viewer.
 
-## Requirements
+## Install
 
-- Rex (tested with server build `0.0.1792158932`)
-- [yazi](https://yazi-rs.github.io) 26+
-- [Neovim](https://neovim.io) 0.9+
-- `jq`
+Run this in a Rex terminal:
 
 ```sh
-brew install yazi neovim jq
+curl -fsSL https://raw.githubusercontent.com/geminixiang/rex-sidecar/main/install.sh | sh
 ```
 
-## Install
+Then press `Cmd+Shift+E`.
+
+The installer does the following:
+
+1. Checks for `rex` and `git`.
+2. Installs `yazi`, `neovim`, and `jq` with Homebrew if they are missing.
+3. Clones this repo into `~/.config/rex/rex-sidecar`.
+4. Installs the git.yazi plugin into the sidecar's private yazi config.
+5. Adds `require("rex-sidecar").setup{}` to `~/.config/rex/init.lua`, unless it
+   is already there.
+6. Reloads the Rex config.
+
+The installer never touches your normal yazi or Neovim config.
+
+### Update
+
+Run the same command again. It runs `git pull` in `~/.config/rex/rex-sidecar` and
+reloads Rex.
+
+### Install from a clone
+
+Use this to hack on the sidecar. The installer symlinks your clone into
+`~/.config/rex/rex-sidecar` instead of cloning a copy.
 
 ```sh
 git clone https://github.com/geminixiang/rex-sidecar ~/Github/rex-sidecar
 ~/Github/rex-sidecar/install.sh
 ```
 
-`install.sh` does four things:
+### Requirements
 
-1. Symlinks the repo to `~/.config/rex/rex-sidecar`.
-2. Installs the git.yazi plugin into the repo's private yazi config.
-3. Adds `require("rex-sidecar").setup{}` to your `~/.config/rex/init.lua`.
-4. Reloads the Rex config.
+- macOS with [Rex](https://www.superlogical.com/rex) (tested with server build
+  `0.0.1792158932`)
+- [yazi](https://yazi-rs.github.io) 26+, [Neovim](https://neovim.io) 0.9+, `jq`.
+  The installer adds these with Homebrew when they are missing.
+
+The installer respects `REX_CONFIG` and `XDG_CONFIG_HOME` when your Rex config
+lives somewhere else.
 
 ## Configure
 
@@ -113,9 +135,14 @@ rather than in the terminal.
 
 ## Uninstall
 
-1. Remove the `require("rex-sidecar")` line from `~/.config/rex/init.lua`.
-2. Remove the symlink: `rm ~/.config/rex/rex-sidecar`.
-3. Reload: `rex config reload`.
+```sh
+sh ~/.config/rex/rex-sidecar/uninstall.sh
+```
+
+This removes the `require` line from your `init.lua` and deletes
+`~/.config/rex/rex-sidecar`. If you installed from a clone, it removes only the
+symlink and leaves the clone alone. It then reloads Rex. It does not remove
+yazi, Neovim, or jq.
 
 ## License
 
